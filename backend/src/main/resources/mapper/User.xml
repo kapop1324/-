@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.web.curation.model.dao.UserDao">
+	
+	<insert id="join" parameterType="UserVO">
+		insert into user(id,pw,nickname,email) values(#{id},#{pw},#{nickname},#{email})
+	</insert>
+
+	<select id="checkid" parameterType="Map" resultType="String">
+		select id from user where id = #{id}
+	</select>
+	
+	<select id="checknickname" parameterType="Map" resultType="String">
+		select nickname from user where nickname = #{nickname}
+	</select>
+	
+	<select id="login" parameterType="Map" resultType="UserVO">
+		select * from user where id = #{id}
+	</select>
+	
+	<update id="updateuser" parameterType="UserVO">
+
+		update user set nickname = #{nickname}, des = #{des}, cellphone = #{cellphone}, birthday = #{birthday},
+		address1 = #{address1}, address2 = #{address2}, img = #{img} where id = #{id}
+		
+	</update>
+
+	<select id="oldpw" parameterType="Changepw" resultType="String">
+		select pw from user where id = #{id}
+	</select>
+	
+	<update id="updatepw" parameterType="Changepw">
+		update user set pw = #{newpw} where id = #{id}
+	</update>
+	
+	<update id="findpw" parameterType="Map">
+		update user set pw = #{newpw} where id = #{id}
+	</update>
+	
+	<select id="userInfo" parameterType="String" resultType="UserVO">
+		select *, (select count(*) from recipe where id = #{id}) as recipecnt from user where id = #{id}
+	</select>
+
+	<select id="countfollower" parameterType="String" resultType="integer">
+		select count(*) from follow where following=#{id}
+	</select>
+	
+	<select id="countfollowing" parameterType="String" resultType="integer">
+		select count(*) from follow where follower=#{id}
+	</select>
+	
+	<select id="countwaiting" parameterType="String" resultType="integer">
+		select count(*) from follow_wait where follow_recipient=#{id}
+	</select>
+	
+	<select id="followinglist" parameterType="String" resultType="FollowInfo">
+		select id, nickname , img from user where id in ( select following from follow where follower=#{id})
+	</select>
+	
+	<select id="followerlist" parameterType="String" resultType="FollowInfo">
+		select id, nickname, img from user where id in ( select follower from follow where following=#{id})
+	</select>
+	
+	<select id="waitlist" parameterType="String" resultType="FollowInfo">
+		select follow_waiter as id, (select nickname from user where id = follow_waiter) as nickname from follow_wait where follow_recipient = #{id};
+	</select>
+	
+	<delete id="followingdelete" parameterType="Map">
+		delete from follow where follower=#{loginid} and following=#{followingid}
+	</delete>
+	
+	<delete id="followerdelete" parameterType="Map">
+		delete from follow where follower=#{followerid} and following=#{loginid}
+	</delete>
+	
+	<insert id="enrollfollower" parameterType="Waiting">
+		insert into follow(follower,following) values(#{waitingid},#{loginid});
+	</insert>
+	
+	<delete id="deletewait" parameterType="Waiting">
+		delete from follow_wait where follow_recipient = #{loginid} and follow_waiter = #{waitingid}
+	</delete>
+	
+	<select id="getallmember" parameterType="Map" resultType="UserVO">
+		select * from user where id != #{id}
+	</select>
+	
+	<insert id="requestfollow" parameterType="Requestfollow">
+		insert into follow(follower,following) values(#{loginid},#{memberid});
+	</insert>
+	
+	<select id="follow_wait" parameterType="Map" resultType="String">
+		select follow_recipient from follow_wait where follow_waiter = #{id}
+	</select> 
+	
+	<select id="follow_already" parameterType="Map" resultType="String">
+		select following from follow where follower = #{id}
+	</select>
+	
+	<delete id="requestdeletefollow" parameterType="Requestfollow">
+		delete from follow_wait where follow_waiter = #{loginid} and follow_recipient = #{memberid}
+	</delete>
+	
+	<delete id="deletefollowing" parameterType="Requestfollow">
+		delete from follow where follower = #{loginid} and following = #{memberid}
+	</delete>
+	
+	<insert id="kakaoreg" parameterType="Snsreg">
+		insert into user(id,pw,nickname,email,sns) values(#{email},#{birthday},#{nickname},#{email},#{sns})
+	</insert>
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="com.web.curation.model.dao.AchieveDao">
+
+	<select id="getachievemasterlist" resultType="Achieve">
+		select achieve_master_name from achieve group by achieve_master_name
+	</select>
+	
+	<select id="getachieveslavelist" resultType="Achieve">
+		select * from achieve
+	</select>
+	
+	<select id="getMasterCount" resultType="Integer">
+		SELECT count(achieve_master_name) from achieve group by achieve_master_name
+	</select>
+	<select id="getAchievecurrent" parameterType="String" resultType="Achievecurrent">
+	select ifnull(id,#{id}) as id, title.title_name as title, count(a.achieve_slave) as clear_cnt, count(achieve.achieve_slave_name) as achieve_cnt, round((count(a.achieve_slave) / count(achieve.achieve_slave_name) * 100)) as percent , title.clear_img as clear_img, title.fail_img as fail_img
+from(select achieve_slave, id, title  from recipe where id = #{id} group by achieve_slave) a
+ right outer join achieve on a.achieve_slave = achieve.achieve_slave_name
+ inner join title on achieve.achieve_title_name = title.title_name group by title.title_name;	</select>
+	<select id="getMasterCategoryCount" parameterType="String" resultType="Achieve">
+		select * from achieve where achieve_master_name = #{master}
+	</select>
+	<select id="getCategoryRecipe" parameterType="map" resultType="RecipeContent">
+   		select * from recipe where id = #{id} and achieve_master = #{master}
+    </select>
+	
+	<select id="getTitleList" parameterType="String" resultType="AchieveTitleList">
+		select ifnull(id,#{id}) as id, title.title_name as title, count(a.achieve_slave) as clear_cnt, count(achieve.achieve_slave_name) as achieve_cnt, round((count(a.achieve_slave) / count(achieve.achieve_slave_name) * 100)) as percent, title.clear_img as clear_img, title.fail_img as fail_img
+		from(select achieve_slave, id, title  from recipe where id = #{id} group by achieve_slave) a
+		right outer join achieve 
+		on a.achieve_slave = achieve.achieve_slave_name
+		inner join title 
+		on achieve.achieve_title_name = title.title_name 
+		group by title.title_name;
+	</select>
+	
+	<select id="getTitleOne" parameterType="map" resultType="AchieveTitleList">
+		select ifnull(id,#{id}) as id, title.title_name as title, count(a.achieve_slave) as clear_cnt, count(achieve.achieve_slave_name) as achieve_cnt, round((count(a.achieve_slave) / count(achieve.achieve_slave_name) * 100)) as percent, title.clear_img as clear_img, title.fail_img as fail_img
+		from(select achieve_slave, id, title  from recipe where id = #{id} group by achieve_slave) a
+		right outer join achieve on a.achieve_slave = achieve.achieve_slave_name
+ 		inner join title on achieve.achieve_title_name = title.title_name group by title.title_name having title.title_name = #{title};
+	</select>
+	<select id="getTitleDetail" parameterType="map" resultType="AchieveTitleDetail">
+		select ifnull(id,#{id}) as id, title.title_name as title, achieve.achieve_slave_name,a.achieve_slave
+		from(select achieve_slave, id, title  from recipe where id = #{id} group by achieve_slave) a
+ 		right outer join achieve on a.achieve_slave = achieve.achieve_slave_name
+ 		inner join title on achieve.achieve_title_name = title.title_name where title.title_name = #{title};
+	</select>
+</mapper>
